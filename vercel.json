@@ -1,25 +1,17 @@
 {
-  "builds": [
-    {
-      "src": "api/index.py",
-      "use": "@vercel/python",
-      "config": {
-        "includeFiles": ["src/**", "data/**"]
-      }
-    },
-    {
-      "src": "public/**/*",
-      "use": "@vercel/static"
+  "functions": {
+    "api/**/*.py": {
+      "includeFiles": ["src/**", "data/**"]
     }
-  ],
-  "routes": [
+  },
+  "rewrites": [
     {
-      "src": "/api/(.*)",
-      "dest": "api/index.py"
+      "source": "/api/(.*)",
+      "destination": "/api/index.py"
     },
     {
-      "src": "/(.*)",
-      "dest": "public/$1"
+      "source": "/(.*)",
+      "destination": "/public/$1"
     }
   ]
 }
