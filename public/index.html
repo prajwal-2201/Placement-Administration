@@ -249,7 +249,7 @@ function switchTab(tabId) {
 
 async function loadData() {
     try {
-        const res = await fetch('/api/dashboard');
+        const res = await fetch('/api/dashboard', { cache: 'no-store' });
         dashboardData = await res.json();
         
         // Update metrics
