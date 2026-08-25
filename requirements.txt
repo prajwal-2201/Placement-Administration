@@ -3,5 +3,3 @@ ortools
 fastapi
 pydantic
 uvicorn
-python-dotenv
-scikit-learn
