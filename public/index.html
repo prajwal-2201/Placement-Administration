@@ -247,8 +247,11 @@ function switchTab(tabId) {
     document.getElementById(tabId).classList.add('active');
 }
 
-async function loadData() {
+async function loadData(reset = false) {
     try {
+        if (reset) {
+            await fetch('/api/reset', { method: 'POST' });
+        }
         const res = await fetch('/api/dashboard', { cache: 'no-store' });
         dashboardData = await res.json();
         
@@ -379,7 +382,7 @@ async function submitIncident() {
 }
 
 // Init
-window.onload = loadData;
+window.onload = () => loadData(true);
 </script>
 
 </body>

@@ -12,9 +12,15 @@ When a critical incident occurs (like a room losing power), the naive approach i
 
 ## 🚀 Key Features
 
+A highly robust, constraint-based scheduling engine simulating "Placement Week" at an engineering college. Built to handle chaotic, real-time disruptions like room failures, panel dropouts, and student withdrawals with localized impact containment.
+
+🌍 **Live Demo:** [https://placement-administration.vercel.app/](https://placement-administration.vercel.app/)
+
 1. **CP-SAT Scheduling Engine:** Uses Google OR-Tools to compute optimal schedules, maximizing company priority while strictly enforcing hardware/resource constraints (no double-booked rooms, panels, or students).
 2. **Dynamic Replanner & Impact Analysis:** Handles real-world disruptions (Room down, Panel dropout, Student withdrawal, Company late) by automatically calculating the blast radius and efficiently rescheduling only the affected interviews.
 3. **Independent Constraint Validator:** A standalone verification layer that mathematically guarantees no invalid schedule is ever persisted.
+4. **Vercel Serverless Architecture:** Fully migrated to a FastAPI + Vanilla JS stateless architecture, enabling blazing-fast edge deployments with zero WebSockets.
+5. **Auto-Reset Demo Mode:** Ideal for presentations; the database automatically resets to a pristine Master Schedule on every page refresh, allowing repeatable, consistent live demonstrations.
 4. **Realistic Data Pipeline:** Bootstraps hundreds of students, companies (Mass, Premium, Product, Niche), rooms, and panels with realistic distributions.
 5. **Interactive Dashboard:** A clean, professional, enterprise-grade Streamlit application for administrators to monitor the schedule and report live incidents via a deterministic interface.
 

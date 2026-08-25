@@ -32,6 +32,12 @@ app.mount("/public", StaticFiles(directory=public_path), name="public")
 async def root():
     return FileResponse(os.path.join(public_path, 'index.html'))
 
+@app.post("/api/reset")
+def reset_database():
+    from src.database.db import reset_db
+    reset_db()
+    return {"status": "success", "message": "Database reset to initial state"}
+
 class DisruptionPayload(BaseModel):
     type: str
     target_id: str

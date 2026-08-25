@@ -1,7 +1,16 @@
 import sqlite3
 import os
+import shutil
 
-DB_PATH = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'scheduler.db')
+# Master DB (read-only in Vercel)
+MASTER_DB_PATH = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'scheduler.db')
+
+# Active DB (writable in Vercel's /tmp)
+# On Windows/local, we can just use a local tmp dir or the same.
+if os.environ.get('VERCEL'):
+    DB_PATH = '/tmp/scheduler.db'
+else:
+    DB_PATH = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'scheduler_active.db')
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS students (
@@ -78,15 +87,30 @@ CREATE TABLE IF NOT EXISTS disruptions (
 );
 """
 
+def reset_db():
+    """Copies the master database to the active database to reset all changes."""
+    if os.path.exists(MASTER_DB_PATH):
+        if os.path.exists(DB_PATH):
+            try:
+                os.remove(DB_PATH)
+            except:
+                pass
+        shutil.copy2(MASTER_DB_PATH, DB_PATH)
+        print(f"Database reset from {MASTER_DB_PATH} to {DB_PATH}")
+    else:
+        print(f"Master DB not found at {MASTER_DB_PATH}, cannot reset.")
+
 def init_db():
-    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
-    conn = sqlite3.connect(DB_PATH)
+    os.makedirs(os.path.dirname(MASTER_DB_PATH), exist_ok=True)
+    conn = sqlite3.connect(MASTER_DB_PATH)
     conn.executescript(SCHEMA)
     conn.commit()
     conn.close()
-    print(f"Database initialized at {DB_PATH}")
+    reset_db()
 
 def get_db_connection():
+    if not os.path.exists(DB_PATH):
+        reset_db()
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
