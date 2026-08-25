@@ -30,7 +30,8 @@ app.add_middleware(
 
 # Serve static files for local testing
 public_path = os.path.join(os.path.dirname(__file__), '..', 'public')
-app.mount("/public", StaticFiles(directory=public_path), name="public")
+if os.path.exists(public_path):
+    app.mount("/public", StaticFiles(directory=public_path), name="public")
 
 @app.get("/")
 async def root():
