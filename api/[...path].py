@@ -66,6 +66,11 @@ class DisruptionPayload(BaseModel):
 def get_dashboard_data():
     if global_import_error:
         return {"error": "Import Failed", "traceback": global_import_error}
+    
+    # Auto-reset DB on dashboard load to ensure consistent baseline across Vercel Lambdas
+    from src.database.db import reset_db
+    reset_db()
+    
     conn = get_db_connection()
     metrics = {
         'completed': conn.execute("SELECT COUNT(*) FROM interviews WHERE status='COMPLETED'").fetchone()[0],
