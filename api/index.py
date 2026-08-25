@@ -21,6 +21,20 @@ except Exception as e:
 
 app = FastAPI()
 
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request
+
+class VercelRewriteMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        if "vercel_path" in request.query_params:
+            new_path = "/api/" + request.query_params["vercel_path"]
+            request.scope["path"] = new_path
+            request.scope["raw_path"] = new_path.encode()
+        return await call_next(request)
+
+app.add_middleware(VercelRewriteMiddleware)
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
