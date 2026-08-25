@@ -63,11 +63,11 @@ This system is broken down into modular, decoupled components to ensure scalabil
    python src/scheduler/validator.py
    ```
 
-6. **Launch the Dashboard:**
+6. **Launch the Dashboard (Local):**
    ```bash
-   streamlit run dashboard/app.py
+   uvicorn api.index:app --reload
    ```
-   Navigate to `http://localhost:8501` to view the application.
+   Navigate to `http://localhost:8000` to view the application.
 
 ## 🧪 Testing Disruptions
 

@@ -2,6 +2,8 @@ import sys
 import os
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import pandas as pd
 
@@ -21,6 +23,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Serve static files for local testing
+public_path = os.path.join(os.path.dirname(__file__), '..', 'public')
+app.mount("/public", StaticFiles(directory=public_path), name="public")
+
+@app.get("/")
+async def root():
+    return FileResponse(os.path.join(public_path, 'index.html'))
 
 class DisruptionPayload(BaseModel):
     type: str
