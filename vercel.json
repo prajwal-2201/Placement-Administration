@@ -1,7 +1,7 @@
 {
   "functions": {
     "api/**/*.py": {
-      "includeFiles": ["src/**", "data/**"]
+      "includeFiles": "{src/**,data/**}"
     }
   },
   "rewrites": [
