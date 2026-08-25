@@ -120,3 +120,8 @@ def trigger_replan(payload: DisruptionPayload):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+from fastapi import Request
+@app.route("/{path:path}", methods=["GET", "POST"])
+async def catch_all(request: Request, path: str):
+    return {"caught_path": path, "url": str(request.url)}
