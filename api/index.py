@@ -1,0 +1,88 @@
+import sys
+import os
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+import pandas as pd
+
+# Fix path to import src modules
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from src.database.db import get_db_connection
+from src.replanner.disruption import apply_disruption
+from src.replanner.impact import calculate_impact
+from src.replanner.replan import perform_replan
+from src.scheduler.validator import validate_schedule
+
+app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+class DisruptionPayload(BaseModel):
+    type: str
+    target_id: str
+    delay_minutes: int = 0
+
+@app.get("/api/dashboard")
+def get_dashboard_data():
+    conn = get_db_connection()
+    metrics = {
+        'completed': conn.execute("SELECT COUNT(*) FROM interviews WHERE status='COMPLETED'").fetchone()[0],
+        'upcoming': conn.execute("SELECT COUNT(*) FROM interviews WHERE status='SCHEDULED'").fetchone()[0],
+        'rooms': conn.execute("SELECT COUNT(DISTINCT room_id) FROM interviews WHERE status='SCHEDULED'").fetchone()[0],
+        'panels': conn.execute("SELECT COUNT(DISTINCT panel_id) FROM interviews WHERE status='SCHEDULED'").fetchone()[0],
+    }
+    df = pd.read_sql_query("""
+        SELECT interview_id as ID, student_id as Student, company_id as Company, 
+               room_id as Room, panel_id as Panel, date as Date, 
+               start_time as Start, end_time as End, status as Status
+        FROM interviews ORDER BY date, start_time
+    """, conn)
+    
+    entities = {
+        'rooms': [r[0] for r in conn.execute("SELECT room_id FROM rooms WHERE status='ACTIVE'").fetchall()],
+        'panels': [r[0] for r in conn.execute("SELECT panel_id FROM panels WHERE status='ACTIVE'").fetchall()],
+        'companies': [r[0] for r in conn.execute("SELECT company_id FROM companies").fetchall()],
+        'students': [r[0] for r in conn.execute("SELECT student_id FROM students WHERE status='ACTIVE'").fetchall()]
+    }
+    conn.close()
+    
+    return {
+        "metrics": metrics,
+        "schedule": df.to_dict(orient="records"),
+        "entities": entities
+    }
+
+@app.post("/api/replan")
+def trigger_replan(payload: DisruptionPayload):
+    details = {}
+    if payload.type == "COMPANY_DELAY":
+        details = {"delay_minutes": payload.delay_minutes}
+        
+    try:
+        d_id = apply_disruption(payload.type, payload.target_id, details)
+        impacted = calculate_impact(d_id)
+        
+        unique_impacted = {i['interview_id']: i for i in impacted}.values()
+        unique_impacted = list(unique_impacted)
+        
+        if len(unique_impacted) == 0:
+            return {"impacted_count": 0, "replanned": [], "unscheduled": [], "message": "No impact"}
+            
+        replanned, unscheduled = perform_replan(unique_impacted)
+        is_valid = validate_schedule()
+        
+        if not is_valid:
+            raise HTTPException(status_code=500, detail="Validation Error: The generated schedule does not meet constraints.")
+            
+        return {
+            "impacted_count": len(unique_impacted),
+            "replanned": replanned,
+            "unscheduled": [u['interview_id'] for u in unscheduled]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

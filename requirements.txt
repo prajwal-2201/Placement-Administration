@@ -1,10 +1,7 @@
 pandas
 ortools
-streamlit>=1.30.0
+fastapi
 pydantic
-google-generativeai
-python-dotenv
-pytest
-plotly
+uvicorn
 python-dotenv
 scikit-learn
