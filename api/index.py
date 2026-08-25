@@ -124,4 +124,4 @@ def trigger_replan(payload: DisruptionPayload):
 from fastapi import Request
 @app.api_route("/{path:path}", methods=["GET", "POST"])
 async def catch_all(request: Request, path: str):
-    return {"caught_path": path, "url": str(request.url)}
+    return {"headers": dict(request.headers), "path": path}
