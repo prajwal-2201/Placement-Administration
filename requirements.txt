@@ -1,0 +1,10 @@
+pandas
+ortools
+streamlit>=1.30.0
+pydantic
+google-generativeai
+python-dotenv
+pytest
+plotly
+python-dotenv
+scikit-learn
