@@ -73,6 +73,11 @@ def get_dashboard_data():
         "entities": entities
     }
 
+@app.get("/api/validate")
+def validate_system():
+    res = validate_schedule()
+    return res
+
 @app.post("/api/replan")
 def trigger_replan(payload: DisruptionPayload):
     details = {}
@@ -87,18 +92,21 @@ def trigger_replan(payload: DisruptionPayload):
         unique_impacted = list(unique_impacted)
         
         if len(unique_impacted) == 0:
-            return {"impacted_count": 0, "replanned": [], "unscheduled": [], "message": "No impact"}
+            return {"impacted_count": 0, "replanned": [], "unscheduled": [], "message": "No impact", "retained_count": 0}
             
         replanned, unscheduled = perform_replan(unique_impacted)
-        is_valid = validate_schedule()
+        val_res = validate_schedule()
         
-        if not is_valid:
+        if not val_res["is_valid"]:
             raise HTTPException(status_code=500, detail="Validation Error: The generated schedule does not meet constraints.")
+            
+        retained = sum(1 for r in replanned if r['old_time'] == r['new_time'])
             
         return {
             "impacted_count": len(unique_impacted),
             "replanned": replanned,
-            "unscheduled": [u['interview_id'] for u in unscheduled]
+            "unscheduled": [u['interview_id'] for u in unscheduled],
+            "retained_count": retained
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

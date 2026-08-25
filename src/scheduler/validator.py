@@ -70,18 +70,10 @@ def validate_schedule():
 
     if all_errors:
         print(f"VALIDATION FAILED! Found {len(all_errors)} constraint violations:")
-        for err in all_errors[:20]:
-            print(f" - {err}")
-        if len(all_errors) > 20:
-            print(f" ... and {len(all_errors) - 20} more errors.")
-        return False
+        return {"is_valid": False, "errors": all_errors}
     else:
         print("VALIDATION SUCCESSFUL! The schedule is 100% mathematically valid.")
-        print("- 0 Student overlaps")
-        print("- 0 Room overlaps")
-        print("- 0 Panel overlaps")
-        print("- 0 Eligibility violations")
-        return True
+        return {"is_valid": True, "errors": []}
 
 if __name__ == '__main__':
     validate_schedule()
