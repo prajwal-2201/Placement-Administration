@@ -8,6 +8,8 @@ An advanced constraint-optimized scheduling and dynamic replanning system built 
 
 When a critical incident occurs (like a room losing power), the naive approach is to cancel all affected interviews or manually shuffle them, causing cascading chaos. This system takes a different approach: it freezes the unaffected interviews and uses a powerful constraint-optimization engine to find the path of least resistance, minimizing churn while mathematically guaranteeing zero overlapping resource conflicts.
 
+> **Note for Mirai Labs Reviewers:** A detailed presentation guide with answers to the core defense questions and a walkthrough for the live disruption scenario can be found in [Mirai_Labs_Defense_Presentation.md](./Mirai_Labs_Defense_Presentation.md).
+
 ## 🚀 Key Features
 
 1. **CP-SAT Scheduling Engine:** Uses Google OR-Tools to compute optimal schedules, maximizing company priority while strictly enforcing hardware/resource constraints (no double-booked rooms, panels, or students).
