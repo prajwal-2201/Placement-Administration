@@ -1,5 +1,4 @@
-pandas
-ortools
 fastapi
 pydantic
 uvicorn
+ortools

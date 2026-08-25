@@ -5,7 +5,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
-import pandas as pd
 
 # Fix path to import src modules
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
@@ -52,12 +51,15 @@ def get_dashboard_data():
         'rooms': conn.execute("SELECT COUNT(DISTINCT room_id) FROM interviews WHERE status='SCHEDULED'").fetchone()[0],
         'panels': conn.execute("SELECT COUNT(DISTINCT panel_id) FROM interviews WHERE status='SCHEDULED'").fetchone()[0],
     }
-    df = pd.read_sql_query("""
+    
+    rows = conn.execute("""
         SELECT interview_id as ID, student_id as Student, company_id as Company, 
                room_id as Room, panel_id as Panel, date as Date, 
                start_time as Start, end_time as End, status as Status
         FROM interviews ORDER BY date, start_time
-    """, conn)
+    """).fetchall()
+    
+    schedule = [dict(row) for row in rows]
     
     entities = {
         'rooms': [r[0] for r in conn.execute("SELECT room_id FROM rooms WHERE status='ACTIVE'").fetchall()],
@@ -69,7 +71,7 @@ def get_dashboard_data():
     
     return {
         "metrics": metrics,
-        "schedule": df.to_dict(orient="records"),
+        "schedule": schedule,
         "entities": entities
     }
 
