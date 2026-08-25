@@ -8,11 +8,16 @@ from pydantic import BaseModel
 
 # Fix path to import src modules
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from src.database.db import get_db_connection
-from src.replanner.disruption import apply_disruption
-from src.replanner.impact import calculate_impact
-from src.replanner.replan import perform_replan
-from src.scheduler.validator import validate_schedule
+global_import_error = None
+try:
+    from src.database.db import get_db_connection
+    from src.replanner.disruption import apply_disruption
+    from src.replanner.impact import calculate_impact
+    from src.replanner.replan import perform_replan
+    from src.scheduler.validator import validate_schedule
+except Exception as e:
+    import traceback
+    global_import_error = traceback.format_exc()
 
 app = FastAPI()
 
@@ -44,6 +49,8 @@ class DisruptionPayload(BaseModel):
 
 @app.get("/api/dashboard")
 def get_dashboard_data():
+    if global_import_error:
+        return {"error": "Import Failed", "traceback": global_import_error}
     conn = get_db_connection()
     metrics = {
         'completed': conn.execute("SELECT COUNT(*) FROM interviews WHERE status='COMPLETED'").fetchone()[0],
